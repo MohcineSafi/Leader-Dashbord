@@ -75,7 +75,6 @@ export const getTransactions = async (req, res) => {
 };
 
 export const getGeography = async (req, res) => {
-  // nivo.rocks documentation: https://nivo.rocks/geo/
   try {
     const users = await User.find();
 

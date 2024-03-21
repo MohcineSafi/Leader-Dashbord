@@ -17,7 +17,6 @@ import ProductStat from "./models/ProductStat.js";
 import Transaction from "./models/Transaction.js";
 import OverallStat from "./models/OverallStat.js";
 import AffiliateStat from "./models/AffiliateStat.js";
-
 import {
   dataUser,
   dataProduct,
@@ -30,15 +29,13 @@ import {
 /* CONFIGURATION */
 dotenv.config();
 const app = express();
-
-// Middleware
+app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
-app.use(express.json());
 
 /* ROUTES */
 app.use("/client", clientRoutes);
@@ -48,28 +45,20 @@ app.use("/sales", salesRoutes);
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 9000;
-
-mongoose.set("strictQuery", false);
-
-async function startServer() {
-  try {
-    await mongoose.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
 
-    // Only add data one time to the database
-    // await AffiliateStat.insertMany(dataAffiliateStat);
-    // await Product.insertMany(dataProduct);
-    // await ProductStat.insertMany(dataProductStat);
-    // await User.insertMany(dataUser);
-    // await Transaction.insertMany(dataTransaction);
-    // await OverallStat.insertMany(dataOverallStat);
-  } catch (error) {
-    console.error(`${error} did not connect`);
-  }
-}
-
-startServer();
+    /* ONLY ADD DATA ONE TIME */
+    // AffiliateStat.insertMany(dataAffiliateStat);
+    // OverallStat.insertMany(dataOverallStat);
+    // Product.insertMany(dataProduct);
+    // ProductStat.insertMany(dataProductStat);
+    // Transaction.insertMany(dataTransaction);
+    // User.insertMany(dataUser);
+  })
+  .catch((error) => console.log(`${error} did not connect`));
