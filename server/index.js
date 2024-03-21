@@ -16,6 +16,7 @@ import Product from "./models/Product.js";
 import ProductStat from "./models/ProductStat.js";
 import Transaction from "./models/Transaction.js";
 import OverallStat from "./models/OverallStat.js";
+import AffiliateStat from "./models/AffiliateStat.js";
 
 import {
   dataUser,
@@ -23,18 +24,21 @@ import {
   dataProductStat,
   dataTransaction,
   dataOverallStat,
+  dataAffiliateStat,
 } from "./data/index.js";
 
 /* CONFIGURATION */
 dotenv.config();
 const app = express();
-app.use(express.json());
+
+// Middleware
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
+app.use(express.json());
 
 /* ROUTES */
 app.use("/client", clientRoutes);
@@ -44,19 +48,28 @@ app.use("/sales", salesRoutes);
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 9000;
-mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
+
+mongoose.set("strictQuery", false);
+
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
 
-    //Only add data one time to the database
-    Product.insertMany(dataProduct);
-    ProductStat.insertMany(dataProductStat);
-    User.insertMany(dataUser);
-    Transaction.insertMany(dataTransaction);
-    OverallStat.insertMany(dataOverallStat);
-  })
-  .catch((error) => console.log(`${error} did not connect`));
+    // Only add data one time to the database
+    // await AffiliateStat.insertMany(dataAffiliateStat);
+    // await Product.insertMany(dataProduct);
+    // await ProductStat.insertMany(dataProductStat);
+    // await User.insertMany(dataUser);
+    // await Transaction.insertMany(dataTransaction);
+    // await OverallStat.insertMany(dataOverallStat);
+  } catch (error) {
+    console.error(`${error} did not connect`);
+  }
+}
+
+startServer();
